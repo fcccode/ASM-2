@@ -115,7 +115,7 @@ _Yann LELONG_
 2. Passe la chaîne modifiée par le premier appel à `sub_401110` à celle-ci et l'entier `1`
 3. Passe la chaîne modifiée par le deuxième appel à `sub_401110` à celle-ci et l'entier `2`
 
-### sub_401190
+### `sub_401190`
 
 #### Opérations reversées
 
@@ -124,3 +124,55 @@ _Yann LELONG_
 * `xor edx, 444E4152h`, edx = 1ère valeur précédemment modifiée
 
 **FLAG : 87A1 25F5 DB5C**
+
+## CIPHERME.exe
+
+### Signatures de chiffrement
+
+Une première question à se poser est "quel type de chiffrement est implémenté dans cet exécutable ?". Pour découvrir les signatures de ces algorithmes, on peut utiliser un outil tel que *signsrch*, à la base un plugin pour IDA, mais utilisé ici comme exécutable. Après exécution de cet outil contre l'exécutable, on obtient la sortie suivante :
+```bash
+- open file "..\CIPHERME.exe"
+- 32768 bytes allocated
+- load signatures
+- open file C:\Users\user\Documents\ASM\Reverse\signsrch\signsrch.sig
+- 3075 signatures in the database
+- start 4 threads
+- start signatures scanning:
+
+  offset   num  description [bits.endian.size]
+  --------------------------------------------
+  0040369e 1018 MD5 digest [32.le.272&]
+  004036b3 2053 RIPEMD-128 InitState [32.le.16&]
+  00406040 896  Rijndael Te0 (0xc66363a5U) [32.le.1024]
+  00406440 898  Rijndael Te1 (0xa5c66363U) [32.le.1024]
+  00406840 900  Rijndael Te2 (0x63a5c663U) [32.le.1024]
+  00406c40 902  Rijndael Te3 (0x6363a5c6U) [32.le.1024]
+  00407040 904  Rijndael Te4 (0x63636363U) [32.le.1024]
+  00407440 905  Rijndael Td0 (0x51f4a750U) [32.le.1024]
+  00407840 907  Rijndael Td1 (0x5051f4a7U) [32.le.1024]
+  00407c40 909  Rijndael Td2 (0xa75051f4U) [32.le.1024]
+  00408040 911  Rijndael Td3 (0xf4a75051U) [32.le.1024]
+  00408440 913  Rijndael Td4 (0x52525252U) [32.le.1024]
+  00408840 914  Rijndael rcon [32.le.40]
+  00408843 915  Rijndael rcon [32.be.40]
+  00409080 1038 padding used in hashing algorithms (0x80 0 ... 0) [..64]
+  004097ee 1283 Windows CryptAcquireContext [..21]
+
+- 16 signatures found in the file in 0 seconds
+- done
+```
+
+On voit donc que sont présentes des signatures correspondant à l'algorithme de hachage MD5, l'algorithme de hachage RIPEMD128 et l'algorithme Rijndael employé par AES.
+
+Les indices laissés nous permettent de mieux comprendre certaines fonctions :
+* 0x40121A => `main`
+* 0x403500 => `hash`
+* 0x4013EA => `EAX` pointe sur le hash
+* 0x403600 => `cipher` (plain, cipher, XX, hash, XX, IV)
+
+En croisant les informations trouvées avec *signsrch* et les indices, on constate que la fonction `hash` fait appel à la signature correspondant à MD5.
+Grâce au 3ème indice, nous allons pouvoir vérifier que c'est bel et bien MD5 qui est utilisé pour hacher le mot de passe saisi par l'utilisateur.
+
+#### Vérification de MD5
+
+On exécute le code jusqu'à l'instruction à l'adresse 0x4013EA. Le mot de passe saisi par l'utilisateur étant "PASSWORD", on s'attend à trouver le hash "319f4d26e3c536b5dd871bb2c52e3178" dans la mémoire pointée par EAX à ce moment. C'est bien le cas.
