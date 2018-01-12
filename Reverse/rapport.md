@@ -130,7 +130,7 @@ _Yann LELONG_
 ### Signatures de chiffrement
 
 Une première question à se poser est "quel type de chiffrement est implémenté dans cet exécutable ?". Pour découvrir les signatures de ces algorithmes, on peut utiliser un outil tel que *signsrch*, à la base un plugin pour IDA, mais utilisé ici comme exécutable. Après exécution de cet outil contre l'exécutable, on obtient la sortie suivante :
-```bash
+```powershell
 - open file "..\CIPHERME.exe"
 - 32768 bytes allocated
 - load signatures
