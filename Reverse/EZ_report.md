@@ -56,4 +56,27 @@
 ## 5è flag
 
 1. Suivre l'exécution pas à pas
-2. 
+2. Appel de sub_401260
+3. Eléments intéressants :
+    * Beaucoup d'écriture en mémoire au lancement de la routine
+4. On constate qu'une chaîne de caractère (incomplète) est écrite dans la mémoire `Nebuchadn[1]z[0Ah][6]r`
+5. Une boucle permet de compter le nombre de caractères qui ont été saisis par l'utilisateur au clavier. Cette valeur est ensuite comparée à `0Ah`
+    * On comprend que le flag doit faire au moins 10 caractères 
+6. En supposant que les valeurs indiquées ici entre crochets correspondent à une position dans le mot, on peut compléter ainsi :
+    * `[1]`     = `e`
+    * `[0Ah]`   = `z`
+    * `[6]`     = `a`
+
+**FLAG : Nebuchadnezzar**
+
+## 6è flag
+
+1. Suivre l'exécution pas à pas
+2. Appel de sub_4019E0
+3. Eléments intéressants :
+    * `cmp  ecx, [ebp+var_10]`
+    * `call ds:atoi`
+4.  On constate que la valeur que l'on a saisi au clavier est convertie en entier pour ensuite être comparée à celle pointée par `[ebp+var_10]`
+5.  En regardant en mémoire ce qui est pointée par `[ebp+var_10]`, on trouve `3DBh` (il faut bien prendre les 4 octets composants l'entier)
+
+**FLAG : 987**
